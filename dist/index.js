@@ -23,9 +23,10 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Get Inputs
         const prefix = (0, core_1.getInput)('prefix', { required: false });
-        const from = (0, core_1.getInput)('from', { required: true });
-        const to = (0, core_1.getInput)('to', { required: true });
-        const workingDirectory = (0, core_1.getInput)('working-directory', { required: true });
+        const extractPrefix = (0, core_1.getInput)('extract-prefix', { required: false });
+        const from = (0, core_1.getInput)('from', { required: false });
+        const to = (0, core_1.getInput)('to', { required: false });
+        const workingDirectory = (0, core_1.getInput)('working-directory', { required: false });
         (0, core_1.debug)(`Inputs: ${JSON.stringify({ prefix, from, to, workingDirectory })}`);
         const json = (0, child_process_1.execSync)(`npx turbo run build --filter="[${from}...${to}]" --dry-run=json`, {
             cwd: (0, path_1.join)(process.cwd(), workingDirectory),
@@ -33,7 +34,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         });
         (0, core_1.debug)(`Output from Turborepo: ${json}`);
         const parsedOutput = JSON.parse(json);
-        const changedPackages = parsedOutput.packages.filter((p) => !prefix || p.startsWith(prefix));
+        const changedPackages = parsedOutput.packages.filter((p) => !prefix || p.startsWith(prefix)).map((p) => extractPrefix ? p.replace(prefix, "") : p);
         (0, core_1.setOutput)('changed', changedPackages);
     }
     catch (error) {

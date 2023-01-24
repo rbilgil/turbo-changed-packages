@@ -6,9 +6,10 @@ const run = async (): Promise<void> => {
   try {
     // Get Inputs
     const prefix = getInput('prefix', { required: false })
-    const from = getInput('from', { required: true })
-    const to = getInput('to', { required: true })
-    const workingDirectory = getInput('working-directory', { required: true })
+    const extractPrefix = getInput('extract-prefix', { required: false })
+    const from = getInput('from', { required: false })
+    const to = getInput('to', { required: false })
+    const workingDirectory = getInput('working-directory', { required: false })
 
     debug(`Inputs: ${JSON.stringify({ prefix, from, to, workingDirectory })}`)
 
@@ -23,7 +24,9 @@ const run = async (): Promise<void> => {
     debug(`Output from Turborepo: ${json}`)
 
     const parsedOutput = JSON.parse(json)
-    const changedPackages = parsedOutput.packages.filter((p: string) => !prefix || p.startsWith(prefix));
+    const changedPackages = parsedOutput.packages.filter(
+      (p: string) => !prefix || p.startsWith(prefix)
+    ).map((p: string) => extractPrefix ? p.replace(prefix, "") : p);
 
     setOutput('changed', changedPackages)
   } catch (error) {
