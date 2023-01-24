@@ -1,19 +1,38 @@
-import * as core from '@actions/core'
-import {wait} from './wait'
+import { execSync } from 'child_process'
+import { join } from 'path'
+import { getInput, debug, setFailed, setOutput } from '@actions/core'
 
-async function run(): Promise<void> {
+const run = async (): Promise<void> => {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    // Get Inputs
+    const prefix = getInput('prefix', { required: false })
+    const from = getInput('from', { required: true })
+    const to = getInput('to', { required: true })
+    const workingDirectory = getInput('working-directory', { required: true })
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    debug(`Inputs: ${JSON.stringify({ prefix, from, to, workingDirectory })}`)
 
-    core.setOutput('time', new Date().toTimeString())
+    const json = execSync(
+      `npx turbo run build --filter="[${from}...${to}]" --dry-run=json`,
+      {
+        cwd: join(process.cwd(), workingDirectory),
+        encoding: 'utf-8',
+      },
+    )
+
+    debug(`Output from Turborepo: ${json}`)
+
+    const parsedOutput = JSON.parse(json)
+    const changedPackages = parsedOutput.packages.filter((p: string) => !prefix || p.startsWith(prefix));
+
+    setOutput('changed', changedPackages)
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error || typeof error === 'string') {
+      setFailed(error)
+    } else {
+      setFailed('Unknown error occured.')
+    }
   }
 }
 
-run()
+void run()
