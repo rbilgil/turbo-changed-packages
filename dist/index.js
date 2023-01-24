@@ -28,7 +28,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         const to = (0, core_1.getInput)('to', { required: false });
         const workingDirectory = (0, core_1.getInput)('working-directory', { required: false });
         (0, core_1.debug)(`Inputs: ${JSON.stringify({ prefix, from, to, workingDirectory })}`);
-        const json = (0, child_process_1.execSync)(`npx turbo run build --filter="[${from}...${to}]" --dry-run=json`, {
+        const json = (0, child_process_1.execSync)(`npx turbo run build ${from || to ? `--filter="[${from}...${to}]"` : ''} --dry-run=json`, {
             cwd: (0, path_1.join)(process.cwd(), workingDirectory),
             encoding: 'utf-8',
         });
