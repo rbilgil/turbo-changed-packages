@@ -7,9 +7,12 @@ branding:
 inputs:
   prefix:
     required: false
-    description: 'Prefix to filter the packages'
+    description: 'Prefix to filter the packages by'
+  extract-prefix:
+    required: false
+    type: boolean
   from:
-    required: true
+    required: false
     description: 'Start of the commit range to check (can be a commit hash or a branch name).'
   to:
     required: false
